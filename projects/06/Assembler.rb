@@ -32,6 +32,7 @@ arr.each do |x|
     else
       symbols[$1] = 16 + n
       n += 1
+      x.replace("@#{symbols[$1]}")
     end
   end
 end
@@ -68,7 +69,8 @@ arr.each do |x|
     x.replace(sprintf("111%s%s%03b%03b", a, comp[c], dest, jmp.index(j)))
   end
 end
-
+filename = ARGV[0].gsub(/.asm$/, ".hack")
+out = File.open(filename, "w")
 arr.each do |x|
-  puts x
+  out << x << "\n"
 end
