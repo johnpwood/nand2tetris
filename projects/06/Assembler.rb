@@ -7,7 +7,34 @@ arr.each do |x|
 end
 arr.select! {|x| x != ""}
 
-#replace symbols (TO-DO)
+symbols = {"SP"=>0, "LCL"=>1, "ARG"=>2, "THIS"=>3,
+           "THAT"=>4, "SCREEN"=>16384, "KBD"=>24576}
+(0..15).each { |x| symbols["R#{x}"] = x }
+
+#accumulate labels into symbol table
+line=0
+arr.each do |x|
+  if x =~ /\((.*)\)/
+    symbols[$1] = line
+    x.replace("")
+  else
+    line += 1
+  end
+end
+arr.select! { |x| x != "" }
+
+#replace pre-existing symbols or define new symbols:
+n = 0
+arr.each do |x|
+  if x =~ /@(.*\D+.*)/
+    if symbols[$1]
+      x.replace("@#{symbols[$1]}")
+    else
+      symbols[$1] = 16 + n
+      n += 1
+    end
+  end
+end
 
 #assemble
 jmp = ["", "jgt", "jeq", "jge", "jlt", "jne", "jle", "jmp"]
@@ -37,10 +64,7 @@ arr.each do |x|
     dest += 1 if d.include? "m"
     
     a = c.include?("m")? "1": "0"
-
-    c.gsub!("m", "a")
-    
-    x.replace(sprintf("111%03b|%s|%s|%03b", dest, a, comp[c], jmp.index(j)))
+    c.gsub!("m", "a")    
     x.replace(sprintf("111%s%s%03b%03b", a, comp[c], dest, jmp.index(j)))
   end
 end
